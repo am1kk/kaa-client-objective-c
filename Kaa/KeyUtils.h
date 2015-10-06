@@ -18,18 +18,22 @@
  * Generate key pair.
  */
 + (KeyPair *)generateKeyPair;
++ (KeyPair *)generateKeyPairWithPublicTag:(uint8_t[])publicTag andPrivateTag:(uint8_t[])privateTag;
 
 /**
  * Gets reference to the public key from key store.
  */
 + (SecKeyRef)getPublicKeyRef;
++ (SecKeyRef)getPublicKeyRefByPublicTag:(uint8_t[])publicTag;
 
 /**
  * Gets reference to the private key from key store.
  */
 + (SecKeyRef)getPrivateKeyRef;
++ (SecKeyRef)getPrivateKeyRefFofPrivateTag:(uint8_t[])privateTag;
 
 + (NSData *)getPublicKey;
++ (NSData *)getPublicKeyForPublicTag:(uint8_t[])publicTag;
 
 + (SecKeyRef)storePublicKey:(NSData *)publicKey withTag:(NSData *)tag;
 
