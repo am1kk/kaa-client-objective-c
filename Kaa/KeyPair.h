@@ -13,7 +13,14 @@
  */
 @interface KeyPair : NSObject
 
+@property (strong, nonatomic) NSData *publicKeyTag;
+@property (strong, nonatomic) NSData *privateKeyTag;
+@property (strong, nonatomic) NSData *remoteKeyTag;
+
+
 - (instancetype)initWithPrivate:(SecKeyRef)privateKey andPublic:(SecKeyRef)publicKey;
+- (instancetype)initWithPrivate:(SecKeyRef)privateKey public:(SecKeyRef)publicKey privateKeyTag:(NSData *)privateKey publicKeyTag:(NSData *)publicKeyTag andRemoteKeyTag:(NSData *)remoteKeyTag;
+
 
 - (SecKeyRef)getPrivateKeyRef;
 - (SecKeyRef)getPublicKeyRef;

@@ -26,6 +26,14 @@
     return self;
 }
 
+- (instancetype)initWithPrivate:(SecKeyRef)privateKey public:(SecKeyRef)publicKey privateKeyTag:(NSData *)privateKeyTag publicKeyTag:(NSData *)publicKeyTag andRemoteKeyTag:(NSData *)remoteKeyTag {
+    self = [self initWithPrivate:privateKey andPublic:publicKey];
+    self.publicKeyTag = publicKeyTag;
+    self.privateKeyTag = privateKeyTag;
+    self.remoteKeyTag = remoteKeyTag;
+    return self;
+}
+
 - (SecKeyRef)getPrivateKeyRef {
     return self.privateKey;
 }
