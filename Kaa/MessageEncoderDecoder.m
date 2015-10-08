@@ -24,6 +24,7 @@ static const uint8_t remotePublicKeyIdentifier[] = "org.kaaproject.kaa.remotepub
 @property (nonatomic,strong) NSData *sessionKey;
 @property (nonatomic,strong) KeyPair *keys;
 @property (nonatomic) SecKeyRef remoteKey;
+@property (nonatomic,strong) NSData *remoteKeyTag;
 @property (nonatomic,strong) NSData *rawRemoteKey;
 
 - (void)decodeSessionKey:(NSData *)encodedSessionKey;
@@ -43,6 +44,9 @@ static const uint8_t remotePublicKeyIdentifier[] = "org.kaaproject.kaa.remotepub
         self.remoteKey = NULL;
         self.rawRemoteKey = remoteKey;
         if (remoteKey) {
+            if (keys.remoteKeyTag)
+                self.remoteKeyTag = keys.remoteKeyTag;
+            
             [self setRemotePublicKey:remoteKey];
         }
         DDLogVerbose(@"%@ Initialized with key pair: [%@] \nRemotePublicKey: %@", TAG, self.keys, [remoteKey hexadecimalString]);
@@ -238,7 +242,7 @@ static const uint8_t remotePublicKeyIdentifier[] = "org.kaaproject.kaa.remotepub
 }
 
 - (void)setRemotePublicKey:(NSData *)remotePublicKey {
-    NSData *tag = [[NSData alloc] initWithBytes:remotePublicKeyIdentifier length:sizeof(remotePublicKeyIdentifier)];
+    NSData *tag = self.remoteKeyTag ? self.remoteKeyTag : [[NSData alloc] initWithBytes:remotePublicKeyIdentifier length:sizeof(remotePublicKeyIdentifier)];
     [KeyUtils removeKeyByTag:tag];
     self.remoteKey = [KeyUtils storePublicKey:remotePublicKey withTag:tag];
 }

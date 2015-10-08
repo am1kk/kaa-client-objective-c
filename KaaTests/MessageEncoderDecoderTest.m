@@ -19,32 +19,42 @@
 
 @end
 
-static uint8_t clientPublicKeyIdentifier[] = "org.kaaproject.kaa.clientPublicKey";
-static uint8_t clientPrivateKeyIdentifier[] = "org.kaaproject.kaa.clientPrivateKey";
+@interface MessageEncoderDecoderTest ()
 
-static uint8_t serverPublicKeyIdentifier[] = "org.kaaproject.kaa.serverPublicKey";
-static uint8_t serverPrivateKeyIdentifier[] = "org.kaaproject.kaa.serverPrivateKey";
+- (NSData *) generateRandomKeyTag;
 
-static uint8_t thiefPublicKeyIdentifier[] = "org.kaaproject.kaa.thiefPublicKey";
-static uint8_t thiefPrivateKeyIdentifier[] = "org.kaaproject.kaa.thiefPrivateKey";
+@end
 
 @implementation MessageEncoderDecoderTest
 
 - (void)setUp {
     [super setUp];
     
-    self.clientKeyPair = [KeyUtils generateKeyPairWithPublicTag:clientPublicKeyIdentifier andPrivateTag:clientPrivateKeyIdentifier];
-    self.serverKeyPair = [KeyUtils generateKeyPairWithPublicTag:serverPublicKeyIdentifier andPrivateTag:serverPrivateKeyIdentifier];
-    self.thiefKeyPair = [KeyUtils generateKeyPairWithPublicTag:thiefPublicKeyIdentifier andPrivateTag:thiefPrivateKeyIdentifier];
+    NSData *clientPublicKeyTag = [self generateRandomKeyTag];
+    NSData *clientPrivateKeyTag = [self generateRandomKeyTag];
+    NSData *clientRemoteKeyTag = [self generateRandomKeyTag];
+    
+    NSData *serverPublicKeyTag = [self generateRandomKeyTag];
+    NSData *serverPrivateKeyTag = [self generateRandomKeyTag];
+    NSData *serverRemoteKeyTag = [self generateRandomKeyTag];
+    
+    NSData *thiefPublicKeyTag = [self generateRandomKeyTag];
+    NSData *thiefPrivateKeyTag = [self generateRandomKeyTag];
+    
+    self.clientKeyPair = [KeyUtils generateKeyPairWithPublicTag:clientPublicKeyTag privateTag:clientPrivateKeyTag andRemoteTag:clientRemoteKeyTag];
+    self.serverKeyPair = [KeyUtils generateKeyPairWithPublicTag:serverPublicKeyTag privateTag:serverPrivateKeyTag andRemoteTag:serverRemoteKeyTag];
+    self.thiefKeyPair = [KeyUtils generateKeyPairWithPublicTag:thiefPublicKeyTag privateTag:thiefPrivateKeyTag andRemoteTag:nil];
 }
+
+
 
 - (void) testBasicMessageEncoderDecoder {
     
     NSString *message = [NSString stringWithFormat:@"secret%u", arc4random()];
     
-    MessageEncoderDecoder *client = [[MessageEncoderDecoder alloc] initWithKeyPair:self.clientKeyPair andRemotePublicKey:[KeyUtils getPublicKeyForPublicTag:serverPublicKeyIdentifier]];
-    MessageEncoderDecoder *server = [[MessageEncoderDecoder alloc] initWithKeyPair:self.serverKeyPair andRemotePublicKey:[KeyUtils getPublicKeyForPublicTag:clientPublicKeyIdentifier]];
-    MessageEncoderDecoder *thief = [[MessageEncoderDecoder alloc] initWithKeyPair:self.thiefKeyPair andRemotePublicKey:[KeyUtils getPublicKeyForPublicTag:clientPublicKeyIdentifier]];
+    MessageEncoderDecoder *client = [[MessageEncoderDecoder alloc] initWithKeyPair:self.clientKeyPair andRemotePublicKey:[KeyUtils getPublicKeyByTag:self.serverKeyPair.publicKeyTag]];
+    MessageEncoderDecoder *server = [[MessageEncoderDecoder alloc] initWithKeyPair:self.serverKeyPair andRemotePublicKey:[KeyUtils getPublicKeyByTag:self.clientKeyPair.publicKeyTag]];
+    MessageEncoderDecoder *thief = [[MessageEncoderDecoder alloc] initWithKeyPair:self.thiefKeyPair andRemotePublicKey:[KeyUtils getPublicKeyByTag:self.clientKeyPair.publicKeyTag]];
     
     NSData *secretData = [client encodeData:[message dataUsingEncoding:NSUTF8StringEncoding]];
     NSData *signature = [client sign:secretData];
@@ -52,6 +62,12 @@ static uint8_t thiefPrivateKeyIdentifier[] = "org.kaaproject.kaa.thiefPrivateKey
     
     XCTAssertTrue([server verify:secretData withSignature:signature]);
 
+}
+
+
+- (NSData *) generateRandomKeyTag {
+    int randomTag = arc4random();
+    return [NSData dataWithBytes:&randomTag length:sizeof(randomTag)];
 }
 
 @end
